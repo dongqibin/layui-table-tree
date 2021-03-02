@@ -1,4 +1,4 @@
-# layui-tableTree
+# layui-tableTreeDj
 
 #### 介绍
 使表格增加了树形结构展示的能力.完全依赖于layui的表格.
@@ -9,8 +9,8 @@ https://www.layui.com/doc/base/modules.html#extend
 
 ```javascript
 
-layui.use(['tableTree'], function() {
-        const tableTree = layui.tableTree;
+layui.use(['tableTreeDj'], function() {
+        const tableTree = layui.tableTreeDj;
         const $ = layui.$;
 
         // 与 layui.table 的参数完全一致,内部本来就是把这些参数传递给table模块的
