@@ -1,5 +1,5 @@
 layui.define(['table', 'jquery'], function(exports) {
-    const MOD_NAME = 'tableTree';
+    const MOD_NAME = 'tableTreeDj';
     const $ = layui.jquery;
     const table = layui.table;
 
