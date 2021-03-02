@@ -4,35 +4,42 @@
 使表格增加了树形结构展示的能力.完全依赖于layui的表格.
 正因为如此,您可以像使用表格组件一样使用该组件.layui的表格功能全都有.全都有.全都有.
 
-#### 软件架构
-软件架构说明
+#### 组件引入方法请阅读 官方文档
+https://www.layui.com/doc/base/modules.html#extend
 
+```javascript
 
-#### 安装教程
+layui.use(['tableTree'], function() {
+        const tableTree = layui.tableTree;
+        const $ = layui.$;
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+        // 与 layui.table 的参数完全一致,内部本来就是把这些参数传递给table模块的
+        const objTable = {
+            elem: '#test'
+            ,url: "./getData"
+            ,cols: [[
+                {field:'name', title:'名称' },
+                {field:'id', title:'ID' },
+                {field:'pid', title:'上级ID' },
+                {field:'level', title:'层级' },
+                {field:'agent_id', title:'代理ID' },
+            ]]
+            ,id:'list'
+        }
 
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+        // 本组件用到的参数, 组件内部有默认值,与此一致,因此您可以只声明不一致的配置项
+        const config = {
+            keyId: "id" // 当前ID
+            , keyPid: "pid" // 上级ID
+            , title: "name" // 标题名称字段,此字段td用于绑定单击折叠展开功能
+            , indent: ' &nbsp; &nbsp;' // 子级td的缩进.可以是其他字符
+            // 图标
+            , icon: {
+                open: 'layui-icon layui-icon-triangle-d', // 展开时候图标
+                close: 'layui-icon layui-icon-triangle-r', // 折叠时候图标
+            }
+        };
+        // 渲染 
+        tableTree.render(objTable, config);
+    });
+```
