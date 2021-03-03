@@ -70,7 +70,7 @@ layui.use(['tableTreeDj'], function() {
         
         // 点击搜索按钮后重载数据.此时可以传入where条件.obj参数与官方表格一致.
         obj = {where:{id: 1}};
-        tableTree.reload(tableId, obj);
+        tableTree.reload(obj);
 
 
     });

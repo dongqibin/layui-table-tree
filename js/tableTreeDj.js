@@ -52,8 +52,9 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 重载
-        reload = (tableId, obj) => {
+        reload = (obj, tableId) => {
             this._initDo(obj);
+            tableId = tableId || this.objTable.id;
             table.reload(tableId, obj);
         }
 
