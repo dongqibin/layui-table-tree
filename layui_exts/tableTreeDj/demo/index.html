@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="../layui/src/css/layui.css" media="all">
-    <script type="text/javascript" src="../layui/src/layui.all.js"></script>
+    <link rel="stylesheet" href="../../../layui/src/css/layui.css" media="all">
+    <script type="text/javascript" src="../../../layui/src/layui.all.js"></script>
 </head>
 <body>
 
@@ -13,11 +13,12 @@
 
 <script type="text/javascript">
     layui.config({
-        base: '../js/'
+        base: '../../../layui_exts/tableTreeDj/'
     });
     layui.use('tableTreeDj', function() {
         let tableTree = layui.tableTreeDj;
 
+        // 分页配置
         const page = {
             elem: 'page'
             , layout: ['prev', 'page', 'next', 'last','skip'] //自定义分页布局
@@ -27,12 +28,14 @@
             , first: 1 //不显示首页
         };
 
+        // 字段配置
         const cols = [[
             {field:'name', title:'名称'}
             ,{field:'id', title:'ID'}
             ,{field:'pid', title:'上级ID'}
         ]];
 
+        // 表格配置
         const objTable = {
             elem: '#test'
             ,url: './getData.json'
