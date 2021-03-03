@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../layui/src/css/layui.css" media="all">
+    <script type="text/javascript" src="../layui/src/layui.all.js"></script>
+</head>
+<body>
+
+<table id="test" lay-filter="test"></table>
+<div id="page"></div>
+
+<script type="text/javascript">
+    layui.config({
+        base: '../js/'
+    });
+    layui.use('tableTreeDj', function() {
+        let tableTree = layui.tableTreeDj;
+
+        const page = {
+            elem: 'page'
+            , layout: ['prev', 'page', 'next', 'last','skip'] //自定义分页布局
+            , groups: 5 //只显示 5 个连续页码
+            , prev: '上一页'
+            , next: '下一页'
+            , first: 1 //不显示首页
+        };
+
+        const cols = [[
+            {field:'name', title:'名称'}
+            ,{field:'id', title:'ID'}
+            ,{field:'pid', title:'上级ID'}
+        ]];
+
+        const objTable = {
+            elem: '#test'
+            ,url: './getData.json'
+            ,page:page
+            ,limit: 10
+            ,cols: cols
+            ,id: 'list'
+            ,done:function(res, curr, count) {
+
+            }
+            ,loading:true
+        }
+
+        const objTree = {
+            showCache: true // 开启展开缓存
+        }
+
+        // tableTree 渲染表格
+        tableTree.render(objTable, objTree);
+
+    });
+</script>
+
+</body>
+</html>
