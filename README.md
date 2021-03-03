@@ -14,13 +14,13 @@ https://www.layui.com/doc/base/modules.html#extend
 * 其他方法: 请阅读源码,只要方法名不以下划线开头都可以使用.如果需要的话.
 
 #### 参数
-keyId: 数据ID.一般对应数据库的主键.默认: 'id'
-keyPid: 数据父ID,与父级数据的ID相等.此参数与ID确定上下级关系.默认: 'pid'
-title: 泛指数据标题,来自列(cols)的field属性.表明此字段在被点击时候会展开/折叠下级. 默认: 'name'
-indent: 缩进字符.在此设置的字符会添加到title列前面.次数为与层级的乘积.默认: ' &nbsp; &nbsp;'
-icon.open: 标题前面的小图标.在展开时候显示.是css的class属性字符串.可以包含多个类,用空格隔开.默认: 'layui-icon layui-icon-triangle-d'
-icon.close: 标题前面的小图标.同open.在折叠时候显示.默认: 'layui-icon layui-icon-triangle-r'
-showCache: 这里就要好好说说了.数据展开折叠缓存.这个配置会影响组件在渲染时候的行为.默认为false.a).如果传false表示不使用缓存.此时渲染完成的状态为全部折叠; b).如果传true.会把操作过程中的展开折叠状态记录到 localStorage 中.key为 unfoldStatus; c).可以传一个字符串.这时候与传true类似,区别是 localStorage 的 key 为传入的字符串.建议传字符串.可以有效避免多个页面之间的冲突.
+* keyId: 数据ID.一般对应数据库的主键.默认: 'id'
+* keyPid: 数据父ID,与父级数据的ID相等.此参数与ID确定上下级关系.默认: 'pid'
+* title: 泛指数据标题,来自列(cols)的field属性.表明此字段在被点击时候会展开/折叠下级. 默认: 'name'
+* indent: 缩进字符.在此设置的字符会添加到title列前面.次数为与层级的乘积.默认: ' &nbsp; &nbsp;'
+* icon.open: 标题前面的小图标.在展开时候显示.是css的class属性字符串.可以包含多个类,用空格隔开.默认: 'layui-icon layui-icon-triangle-d'
+* icon.close: 标题前面的小图标.同open.在折叠时候显示.默认: 'layui-icon layui-icon-triangle-r'
+* showCache: 这里就要好好说说了.数据展开折叠缓存.这个配置会影响组件在渲染时候的行为.默认为false.a).如果传false表示不使用缓存.此时渲染完成的状态为全部折叠; b).如果传true.会把操作过程中的展开折叠状态记录到 localStorage 中.key为 unfoldStatus; c).可以传一个字符串.这时候与传true类似,区别是 localStorage 的 key 为传入的字符串.建议传字符串.可以有效避免多个页面之间的冲突.
 
 以上参数都可以不传.
 
