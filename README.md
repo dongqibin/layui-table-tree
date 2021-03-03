@@ -20,9 +20,12 @@ https://www.layui.com/doc/base/modules.html#extend
 * indent: 缩进字符.在此设置的字符会添加到title列前面.次数为与层级的乘积.默认: ' &nbsp; &nbsp;'
 * icon.open: 标题前面的小图标.在展开时候显示.是css的class属性字符串.可以包含多个类,用空格隔开.默认: 'layui-icon layui-icon-triangle-d'
 * icon.close: 标题前面的小图标.同open.在折叠时候显示.默认: 'layui-icon layui-icon-triangle-r'
-* showCache: 这里就要好好说说了.数据展开折叠缓存.这个配置会影响组件在渲染时候的行为.默认为false.a).如果传false表示不使用缓存.此时渲染完成的状态为全部折叠; b).如果传true.会把操作过程中的展开折叠状态记录到 localStorage 中.key为 unfoldStatus; c).可以传一个字符串.这时候与传true类似,区别是 localStorage 的 key 为传入的字符串.建议传字符串.可以有效避免多个页面之间的冲突.
+* showCache: 这里就要好好说说了.数据展开折叠缓存.这个配置会影响组件在渲染时候的行为.默认为false.
+    - 如果传false表示不使用缓存.此时渲染完成的状态为全部折叠; 
+    - 如果传true.会把操作过程中的展开折叠状态记录到 localStorage 中.key为 unfoldStatus; 
+    - 可以传一个字符串.这时候与传true类似,区别是 localStorage 的 key 为传入的字符串.建议传字符串.可以有效避免多个页面之间的冲突.
 
-以上参数都可以不传.
+以上参数都可以不传(在与默认值完全一致的情况下).
 
 #### 特别说明
 很遗憾.为了实现点击折叠展开功能.我给表格的某个字段绑定了点击事件.但是除此之外我不知道该怎么做才能做到不污染原始表格.可能会给您带来困扰.建议将 title 字段设置为用户平时不点击的字段以期将影响降低到最小
