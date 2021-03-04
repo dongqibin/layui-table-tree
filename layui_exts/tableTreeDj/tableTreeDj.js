@@ -19,6 +19,7 @@ layui.define(['table', 'jquery'], function(exports) {
             // 传true表示启用缓存,占用 localStorage的key = unfoldStatus
             // 传具体字符串表示启用, 字符串会设置成key
             , showCache: false
+            , sort: 'asc' // 排序方式.['asc', 'desc'].必须小写
         };
         // 运行数据模板
         runTemplate = {
@@ -273,6 +274,11 @@ layui.define(['table', 'jquery'], function(exports) {
             return cache;
         }
 
+        // 获取排序方式
+        getSort = () => {
+            return this.config.sort || 'asc';
+        }
+
         // 缓存操作
         cache = (key, val) => {
             if(val) {
@@ -313,7 +319,6 @@ layui.define(['table', 'jquery'], function(exports) {
         _parse = (data) => {
             // 按 pid 排序
             const keyPid = this.getKeyPid();
-            console.log(data);
             data.sort((x, y) => {
                 return x[keyPid] - y[keyPid];
             });
@@ -330,11 +335,11 @@ layui.define(['table', 'jquery'], function(exports) {
             // 缩进显示
             data = this._showIndent(data);
 
-            // 排序, 使子级紧挨在父级下面
-            data = this._disposalSortParent(data);
-
             // 整理父子级关系,只有两级,毕竟点击上级只展开下级.下级的下级并没有展开的需求
             this._disposalParentChild(data);
+
+            // 排序, 使子级紧挨在父级下面
+            data = this._disposalSortParent(data);
 
             // 整理 data-index 与 id 的对应关系,点击得到 data-index => $(data-index) => id; id => dataIndex[id] => data-index
             this._disposalDataIndex(data);
@@ -437,16 +442,71 @@ layui.define(['table', 'jquery'], function(exports) {
 
         // 排序 - 使子级紧挨在父级下面
         _disposalSortParent = (data) => {
-            let tmp = [];
+            const resData = [];
 
-            const keyPid = this.getKeyPid();
+            const level = this.getLevel();
+            const pc = this.getParentChild();
+            const sort = this.getSort();
 
-            data.forEach((item) => {
-                const pid = item[keyPid];
-                const index = this.getIndexById(tmp, pid);
-                tmp.splice(index, 0, item);
-            })
-            return tmp;
+            const dataTop = [];
+            for(let key in level) {
+                if(level[key] === 0) {
+                    if(sort === 'asc') {
+                        dataTop.push(key);
+                    } else {
+                        dataTop.splice(0, 0, key);
+                    }
+                }
+            }
+
+            let dataTopHas = dataTop.length > 0;
+            while (dataTopHas) {
+                const id = parseInt(dataTop[0]);
+
+
+                const i = this._getdataOriIndexById(id, data);
+                if(i === undefined) {
+                    dataTop.splice(0, 1);
+                    dataTopHas = dataTop.length > 0;
+                    continue;
+                }
+
+                // 先将值取出来存入 resData 中
+                resData.push(data[i]);
+
+                // 再从 data 中删除这个元素. 注意要用完再删
+                data.splice(i, 1);
+
+                dataTop.splice(0, 1);
+
+                const child = pc[id];
+                if(child) {
+                    if(sort !== 'asc') {
+                        child.sort((x, y) => {
+                            return y - x;
+                        });
+                        console.log(child);
+                    }
+                    dataTop.splice(0, 0, ...child);
+                }
+
+                dataTopHas = dataTop.length > 0;
+            }
+
+            console.log('resData', resData);
+            return resData;
+        }
+
+        // 获取某id=x所在某个数组的位置
+        _getdataOriIndexById = (id, data) => {
+            const keyId = this.getKeyId();
+            for(let i=0; i<data.length; i++) {
+                const line = data[i];
+                if(line[keyId] === id) {
+                    return i;
+                }
+            }
+            return false;
         }
 
         // 显示缩进 - 标题前面增加缩进字符串
