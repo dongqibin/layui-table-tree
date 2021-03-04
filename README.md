@@ -13,6 +13,7 @@ https://www.layui.com/doc/base/modules.html#extend
 * getTable(): 由于该组件内部使用了layui.table.如果想更细粒度的操作table.可以使用此方法获取table对象
 * 其他方法: 请阅读源码,只要方法名不以下划线开头都可以使用.如果需要的话.
 
+
 #### 参数
 * keyId: 数据ID.一般对应数据库的主键.默认: 'id'
 * keyPid: 数据父ID,与父级数据的ID相等.此参数与ID确定上下级关系.默认: 'pid'
