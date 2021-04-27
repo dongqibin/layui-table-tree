@@ -300,7 +300,11 @@ layui.define(['table', 'jquery'], function(exports) {
             }
 
             // 整理数据初始状态
+            const parseData = obj.parseData || {};
             obj.parseData = (res) => {
+                if(JSON.stringify(parseData) !== "{}") {
+                    res = parseData(res)
+                }
                 res.data = this._parse(res.data);
                 return res;
             }
