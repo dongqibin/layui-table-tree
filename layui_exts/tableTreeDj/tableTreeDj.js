@@ -48,13 +48,32 @@ layui.define(['table', 'jquery'], function(exports) {
                 this.config = $.extend(this.config, config);
             }
 
-            this._initDo(obj);
+            // 整理数据初始状态
+            const parseData = obj.parseData || {};
+            obj.parseData = (res) => {
+                if(JSON.stringify(parseData) !== "{}") {
+                    res = parseData(res)
+                }
+                res.data = this._parse(res.data);
+                return res;
+            }
+
+            // 数据渲染完成后,执行隐藏操作
+            const done = obj.done || {};
+            obj.done = (res, curr, count) => {
+                this._done(obj, res, curr, count);
+                if(JSON.stringify(done) !== "{}") {
+                    done(res, curr, count);
+                }
+            }
+
+            this._initDo();
             table.render(obj);
         }
 
         // 重载
         reload = (obj, tableId) => {
-            this._initDo(obj);
+            this._initDo();
             tableId = tableId || this.objTable.id;
             table.reload(tableId, obj);
         }
@@ -290,32 +309,13 @@ layui.define(['table', 'jquery'], function(exports) {
 
         // ================= 私有方法 ===================
 
-        _initDo = (obj) => {
+        _initDo = () => {
             // 初始化运行时配置参数
             this.run = JSON.parse(JSON.stringify(this.runTemplate));
 
             const cache = this.getShowCache();
             if(cache) {
                 this.run.unfoldStatus = this.cache(cache) || {};
-            }
-
-            // 整理数据初始状态
-            const parseData = obj.parseData || {};
-            obj.parseData = (res) => {
-                if(JSON.stringify(parseData) !== "{}") {
-                    res = parseData(res)
-                }
-                res.data = this._parse(res.data);
-                return res;
-            }
-
-            // 数据渲染完成后,执行隐藏操作
-            const done = obj.done || {};
-            obj.done = (res, curr, count) => {
-                this._done(obj, res, curr, count);
-                if(JSON.stringify(done) !== "{}") {
-                    done(res, curr, count);
-                }
             }
         }
 
@@ -489,7 +489,6 @@ layui.define(['table', 'jquery'], function(exports) {
                         child.sort((x, y) => {
                             return y - x;
                         });
-                        console.log(child);
                     }
                     dataTop.splice(0, 0, ...child);
                 }
@@ -497,7 +496,6 @@ layui.define(['table', 'jquery'], function(exports) {
                 dataTopHas = dataTop.length > 0;
             }
 
-            console.log('resData', resData);
             return resData;
         }
 
