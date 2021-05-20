@@ -20,6 +20,11 @@ layui.define(['table', 'jquery'], function(exports) {
             // 传具体字符串表示启用, 字符串会设置成key
             , showCache: false
             , sort: 'asc' // 排序方式.['asc', 'desc'].必须小写
+            // 点击展开时候的回调函数
+            ,showByPidCallback: {}
+
+            // 点击折叠时候的回调函数
+            ,hideByPidCallback: {}
         };
         // 运行数据模板
         runTemplate = {
@@ -158,6 +163,8 @@ layui.define(['table', 'jquery'], function(exports) {
 
             // 当前ID 折叠状态设为 false
             this.setUnfoldStatus(id, false);
+
+            this._hideByPidCallback(idArr);
         }
 
         showByPid = (id, layId) => {
@@ -183,6 +190,9 @@ layui.define(['table', 'jquery'], function(exports) {
 
             // 当前ID 折叠状态设为 true
             this.setUnfoldStatus(id, true);
+
+            // 回调函数
+            this._showByPidCallback(idArr);
         }
 
         // 根据 data-index 隐藏一行
@@ -587,6 +597,21 @@ layui.define(['table', 'jquery'], function(exports) {
             this.run.hasChild = hasChild;
         }
 
+        // 展开回调函数
+        _showByPidCallback = (idArr) => {
+            let callback = this.config.showByPidCallback
+            if(JSON.stringify(callback) !== "{}") {
+                callback(idArr);
+            }
+        }
+
+        // 折叠回调函数
+        _hideByPidCallback = (idArr) => {
+            let callback = this.config.hideByPidCallback
+            if(JSON.stringify(callback) !== "{}") {
+                callback(idArr);
+            }
+        }
 
     }
 

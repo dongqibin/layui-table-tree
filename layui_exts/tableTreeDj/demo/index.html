@@ -10,6 +10,8 @@
 
 <table id="test" lay-filter="test"></table>
 <div id="page"></div>
+<button id="show">展开</button>
+<button id="hide">折叠</button>
 
 <script type="text/javascript">
     layui.config({
@@ -17,6 +19,7 @@
     });
     layui.use('tableTreeDj', function() {
         let tableTree = layui.tableTreeDj;
+        let $ = layui.$;
 
         // 分页配置
         const page = {
@@ -60,10 +63,23 @@
         const objTree = {
             showCache: true // 开启展开缓存
             , sort: 'asc'
+            , showByPidCallback: (idArr) => {
+                console.log('idArr', idArr);
+            }
+            , hideByPidCallback: (idArr) => {
+                console.log('idArr', idArr);
+            }
         }
 
         // tableTree 渲染表格
         tableTree.render(objTable, objTree);
+
+        $('#show').click(() => {
+            tableTree.showAll(objTable);
+        });
+        $('#hide').click(() => {
+            tableTree.hideAll(objTable);
+        });
 
     });
 </script>
