@@ -260,9 +260,9 @@ layui.define(['table', 'jquery'], function(exports) {
         // 获取父子级关系
         getParentChild = (id) => {
             if(!!id) {
-                return this.run.parentCHild[id];
+                return this.run.parentChild[id];
             }
-            return this.run.parentCHild;
+            return this.run.parentChild;
         }
 
         // 获取 dataIndex
@@ -343,6 +343,9 @@ layui.define(['table', 'jquery'], function(exports) {
             // 显示图标 -- 给标题增加图标span
             data = this._showIcon(data);
 
+            // 计算最小pid当做顶级.因为某种情况下.顶级的pid不一定是0
+            this._minPid(data);
+
             // 计算层级
             this._disposalLevel(data);
 
@@ -359,6 +362,11 @@ layui.define(['table', 'jquery'], function(exports) {
             this._disposalDataIndex(data);
 
             return data;
+        }
+
+        // 计算最小pid.因为某些情况下.最小pid不一定是0
+        _minPid = (data) => {
+            this.run.minPid = data[0][this.getKeyPid()] || 0;
         }
 
         // 数据渲染之后,执行的操作
@@ -445,13 +453,13 @@ layui.define(['table', 'jquery'], function(exports) {
             data.forEach((item) => {
                 const id = item[keyId];
                 const pid = item[keyPid];
-                if(pid !== 0) {
+                if(pid !== this.run.minPid) {
                     const parent = parentChild[pid] || [];
                     parent.push(id);
                     parentChild[pid] = parent;
                 }
             });
-            this.run.parentCHild = parentChild;
+            this.run.parentChild = parentChild;
         }
 
         // 排序 - 使子级紧挨在父级下面
@@ -550,13 +558,17 @@ layui.define(['table', 'jquery'], function(exports) {
             data.forEach((item) => {
                 const id = item[keyId];
                 const pid = item[keyPid];
-                if(pid === 0) {
+                if(pid === this.run.minPid) {
                     // 如果是顶级,则直接加入到 level 中
                     level[id] = 0;
                 } else {
                     // 如果不是顶级, 从 level 中取上级的level, 加1 存入 level 中
                     const levelItem = level[pid];
-                    level[id] = levelItem + 1;
+                    if(typeof(levelItem) == "undefined") {
+                        level[id] = 0
+                    } else {
+                        level[id] = levelItem + 1;
+                    }
                 }
             });
             this.run.level = level;
@@ -591,7 +603,7 @@ layui.define(['table', 'jquery'], function(exports) {
             data.forEach((item) => {
                 const id = item[keyId];
                 const pid = item[keyPid];
-                hasChild[id] = false;
+                //hasChild[id] = false; // 在顺序混乱的情况下.会出现id=false覆盖pid=true的情况.id=pid的情况下.
                 hasChild[pid] = true;
             });
             this.run.hasChild = hasChild;
