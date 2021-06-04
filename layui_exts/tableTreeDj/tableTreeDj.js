@@ -93,33 +93,25 @@ layui.define(['table', 'jquery'], function(exports) {
 
         // 隐藏全部子级
         hideAll = (obj) => {
-            const parentChild = this.getParentChild();
             const dataIndex = this.getDataIndex();
+            const layId = obj.id;
 
-            for(let key in parentChild) {
-                const child = parentChild[key];
-                const layId = obj.id;
-
-                child.forEach((id) => {
-                    const index = dataIndex[id];
-                    this.hideByDataIndex(layId, index);
-                });
+            for(let id in dataIndex) {
+                if(!!this.run.hasChild[id]) {
+                    this.hideByPid(id, layId);
+                }
             }
         }
 
         // 显示全部子级
         showAll = (obj) => {
-            const parentChild = this.getParentChild();
             const dataIndex = this.getDataIndex();
+            const layId = obj.id;
 
-            for(let key in parentChild) {
-                const child = parentChild[key];
-                const layId = obj.id;
-
-                child.forEach((id) => {
-                    const index = dataIndex[id];
-                    this.showByDataIndex(layId, index);
-                });
+            for(let id in dataIndex) {
+                if(!!this.run.hasChild[id]) {
+                    this.showByPid(id, layId);
+                }
             }
         }
 
