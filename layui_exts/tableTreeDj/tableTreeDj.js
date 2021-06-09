@@ -4,44 +4,47 @@ layui.define(['table', 'jquery'], function(exports) {
     const table = layui.table;
 
     class Tree {
-        config = {
-            keyId: "id" // 当前ID
-            , keyPid: "pid" // 上级ID
-            , title: "name" // 标题名称字段,此字段td用于绑定单击折叠展开功能
-            , indent: ' &nbsp; &nbsp;' // 缩进.可以是其他字符
-            // 图标
-            , icon: {
-                open: 'layui-icon layui-icon-triangle-d', // 展开时候图标
-                close: 'layui-icon layui-icon-triangle-r', // 折叠时候图标
+        constructor() {
+            this.config = {
+                keyId: "id" // 当前ID
+                , keyPid: "pid" // 上级ID
+                , title: "name" // 标题名称字段,此字段td用于绑定单击折叠展开功能
+                , indent: ' &nbsp; &nbsp;' // 缩进.可以是其他字符
+                // 图标
+                , icon: {
+                    open: 'layui-icon layui-icon-triangle-d', // 展开时候图标
+                    close: 'layui-icon layui-icon-triangle-r', // 折叠时候图标
+                }
+
+                // 是否启用展开状态缓存
+                // 传true表示启用缓存,占用 localStorage的key = unfoldStatus
+                // 传具体字符串表示启用, 字符串会设置成key
+                , showCache: false
+                , sort: 'asc' // 排序方式.['asc', 'desc'].必须小写
+                // 点击展开时候的回调函数
+                ,showByPidCallback: {}
+
+                // 点击折叠时候的回调函数
+                ,hideByPidCallback: {}
+            };
+            // 运行数据模板
+            this.runTemplate = {
+                hasChild: {} // 是否有子级[id=>true]
+                , level: {} // 层级 [id=>0]
+                , parentCHild: {} // 父子级关系 [pid=> [id, id]]
+                , dataIndex: {} // 表格 data-index 与 数据id 的对应关系
+                , unfoldStatus: {} // id=>true ,true展开, false折叠.
             }
+            // 实际运行时候的数据
+            this.run = {}
 
-            // 是否启用展开状态缓存
-            // 传true表示启用缓存,占用 localStorage的key = unfoldStatus
-            // 传具体字符串表示启用, 字符串会设置成key
-            , showCache: false
-            , sort: 'asc' // 排序方式.['asc', 'desc'].必须小写
-            // 点击展开时候的回调函数
-            ,showByPidCallback: {}
-
-            // 点击折叠时候的回调函数
-            ,hideByPidCallback: {}
-        };
-        // 运行数据模板
-        runTemplate = {
-            hasChild: {} // 是否有子级[id=>true]
-            , level: {} // 层级 [id=>0]
-            , parentCHild: {} // 父子级关系 [pid=> [id, id]]
-            , dataIndex: {} // 表格 data-index 与 数据id 的对应关系
-            , unfoldStatus: {} // id=>true ,true展开, false折叠.
+            // table参数,作为中转变量,以期二次渲染的时候不用再次传入
+            this.objTable = {};
         }
-        // 实际运行时候的数据
-        run = {}
 
-        // table参数,作为中转变量,以期二次渲染的时候不用再次传入
-        objTable = {};
 
         // 渲染
-        render = (obj, config) => {
+        render(obj, config) {
             // 此操作是为了在多次调用render方法的时候,可以忽略obj参数
             if(!!obj) {
                 this.objTable = obj;
@@ -77,14 +80,14 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 重载
-        reload = (obj, tableId) => {
+        reload(obj, tableId) {
             this._initDo();
             tableId = tableId || this.objTable.id;
             table.reload(tableId, obj);
         }
 
         // 获取table对象
-        getTable = () => {
+        getTable() {
             return table;
         }
 
@@ -92,7 +95,7 @@ layui.define(['table', 'jquery'], function(exports) {
         // ================ 以下方法外部也可以调用 ========================
 
         // 隐藏全部子级
-        hideAll = (obj) => {
+        hideAll(obj) {
             const dataIndex = this.getDataIndex();
             const layId = obj.id;
 
@@ -104,7 +107,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 显示全部子级
-        showAll = (obj) => {
+        showAll(obj) {
             const dataIndex = this.getDataIndex();
             const layId = obj.id;
 
@@ -115,22 +118,22 @@ layui.define(['table', 'jquery'], function(exports) {
             }
         }
 
-        getElemTrByIndex = (layId, index) => {
+        getElemTrByIndex(layId, index) {
             return $("[lay-id='"+ layId +"'] table tr[data-index='"+ index +"']");
         }
 
-        getElemTdByIndex = (layId, index) => {
+        getElemTdByIndex(layId, index) {
             const title = this.getTitle();
             return $("[lay-id='"+ layId +"'] table tr[data-index='"+ index +"'] td[data-field="+ title +"]");
         }
 
-        getElemIconByIndex = (layId, index) => {
+        getElemIconByIndex(layId, index) {
             const title = this.getTitle();
             return $("[lay-id='"+ layId +"'] table tr[data-index='"+ index +"'] td[data-field="+ title +"] div span");
         }
 
         // 根据父元素隐藏子元素
-        hideByPid = (id, layId) => {
+        hideByPid(id, layId) {
             const idArr = this.getParentChild(id);
             if(!idArr) {
                 return false;
@@ -159,7 +162,7 @@ layui.define(['table', 'jquery'], function(exports) {
             this._hideByPidCallback(idArr);
         }
 
-        showByPid = (id, layId) => {
+        showByPid(id, layId) {
             const idArr = this.getParentChild(id);
             if(!idArr) {
                 return false;
@@ -188,19 +191,19 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 根据 data-index 隐藏一行
-        hideByDataIndex = (layId, index) => {
+        hideByDataIndex(layId, index) {
             const elem = this.getElemTrByIndex(layId, index);
             elem.addClass('layui-hide');
         }
 
         // 根据 data-index 显示一行
-        showByDataIndex = (layId, index) => {
+        showByDataIndex(layId, index) {
             const elem = this.getElemTrByIndex(layId, index);
             elem.removeClass('layui-hide');
         }
 
         // 根据 id 获取 索引
-        getIndexById = (data, id) => {
+        getIndexById(data, id) {
             const keyId = this.getKeyId();
             for(let i=0; i<data.length; i++) {
                 if(data[i][keyId] === id) {
@@ -212,37 +215,37 @@ layui.define(['table', 'jquery'], function(exports) {
 
         // ================== 获取器 ====================
         // 获取主键 key
-        getKeyId = () => {
+        getKeyId() {
             return this.config.keyId;
         }
 
         // 获取上级 key
-        getKeyPid = () => {
+        getKeyPid() {
             return this.config.keyPid;
         }
 
         // 获取要缩进的字段
-        getTitle = () => {
+        getTitle() {
             return this.config.title;
         }
 
         // 获取缩进字符
-        getIndent = () => {
+        getIndent() {
             return this.config.indent;
         }
 
         // 获取图标开启
-        getIconOpen = () => {
+        getIconOpen() {
             return this.config.icon.open;
         }
 
         // 获取图标关闭
-        getIconClose = () => {
+        getIconClose() {
             return this.config.icon.close;
         }
 
         // 获取层级
-        getLevel = (id) => {
+        getLevel(id) {
             if(!!id) {
                 return this.run.level[id];
             }
@@ -250,7 +253,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 获取父子级关系
-        getParentChild = (id) => {
+        getParentChild(id) {
             if(!!id) {
                 return this.run.parentChild[id];
             }
@@ -258,17 +261,17 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 获取 dataIndex
-        getDataIndex = () => {
+        getDataIndex() {
             return this.run.dataIndex;
         }
 
         // 获取是否有子级数组
-        getHasChild = () => {
+        getHasChild() {
             return this.run.hasChild;
         }
 
         // 获取展开的id
-        getUnfoldStatus = (id) => {
+        getUnfoldStatus(id) {
             if(!!id) {
                 return this.run.unfoldStatus[id] || false;
             }
@@ -276,7 +279,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 设置展开id数据的值
-        setUnfoldStatus = (id, flag) => {
+        setUnfoldStatus(id, flag) {
             flag = flag || false;
             this.run.unfoldStatus[id] = flag;
 
@@ -287,7 +290,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 获取是否启用展示缓存,返回值是 缓存的 key
-        getShowCache = () => {
+        getShowCache() {
             let cache = this.config.showCache;
             if(cache === true) {
                 return "unfoldStatus";
@@ -296,12 +299,12 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 获取排序方式
-        getSort = () => {
+        getSort() {
             return this.config.sort || 'asc';
         }
 
         // 缓存操作
-        cache = (key, val) => {
+        cache(key, val) {
             if(val) {
                 val = JSON.stringify(val);
                 localStorage.setItem(key, val);
@@ -311,7 +314,7 @@ layui.define(['table', 'jquery'], function(exports) {
 
         // ================= 私有方法 ===================
 
-        _initDo = () => {
+        _initDo() {
             // 初始化运行时配置参数
             this.run = JSON.parse(JSON.stringify(this.runTemplate));
 
@@ -322,7 +325,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 数据整理(总) - 获取数据之后,渲染数据之前.
-        _parse = (data) => {
+        _parse(data) {
             // 按 pid 排序
             const keyPid = this.getKeyPid();
             data.sort((x, y) => {
@@ -357,12 +360,12 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 计算最小pid.因为某些情况下.最小pid不一定是0
-        _minPid = (data) => {
+        _minPid(data) {
             this.run.minPid = data[0][this.getKeyPid()] || 0;
         }
 
         // 数据渲染之后,执行的操作
-        _done = (obj, res, curr, count) => {
+        _done(obj, res, curr, count) {
             // 初始化展开状态, 根据缓存确定是否展开,缓存没有则隐藏子级
             this._initShow(res.data, obj.id);
 
@@ -371,7 +374,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 初始化展开状态, 根据缓存确定是否展开
-        _initShow = (data, layId) => {
+        _initShow(data, layId) {
             const that = this;
 
             const keyId = this.getKeyId();
@@ -392,7 +395,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 给标题绑定点击事件
-        _bindTitleClick = (data, obj) => {
+        _bindTitleClick(data, obj) {
             const that = this;
 
             const dataIndex = this.getDataIndex();
@@ -426,7 +429,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 整理数据 - 整理 layui.table 行中的 data-index 与 数据id 的对应关系[id=>index]
-        _disposalDataIndex = (data) => {
+        _disposalDataIndex(data) {
             let dataIndex = {};
             const keyId = this.getKeyId();
             data.forEach((item, index) => {
@@ -437,7 +440,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 整理数据 - 整理父子级关系 [pid => [id, id]]
-        _disposalParentChild = (data) => {
+        _disposalParentChild(data) {
             const parentChild = {}
             const keyId = this.getKeyId();
             const keyPid = this.getKeyPid();
@@ -455,7 +458,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 排序 - 使子级紧挨在父级下面
-        _disposalSortParent = (data) => {
+        _disposalSortParent(data) {
             const resData = [];
 
             const level = this.getLevel();
@@ -510,7 +513,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 获取某id=x所在某个数组的位置
-        _getdataOriIndexById = (id, data) => {
+        _getdataOriIndexById(id, data) {
             const keyId = this.getKeyId();
             for(let i=0; i<data.length; i++) {
                 const line = data[i];
@@ -522,7 +525,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 显示缩进 - 标题前面增加缩进字符串
-        _showIndent = (data) => {
+        _showIndent(data) {
             let tmp = [];
 
             const indent = this.getIndent();
@@ -541,7 +544,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 整理数据 - 层级[id=>level]
-        _disposalLevel = (data) => {
+        _disposalLevel(data) {
             let level = {}; // id => level
 
             const keyId = this.getKeyId();
@@ -567,7 +570,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 显示图标 - 标题增加span标签
-        _showIcon = (data) => {
+        _showIcon(data) {
             let tmp = [];
 
             const keyId = this.getKeyId();
@@ -586,7 +589,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 整理数据 - 某数据是否有子级
-        _disposalHasChild = (data) => {
+        _disposalHasChild(data) {
             let hasChild = {};
 
             const keyId = this.getKeyId();
@@ -602,7 +605,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 展开回调函数
-        _showByPidCallback = (idArr) => {
+        _showByPidCallback(idArr) {
             let callback = this.config.showByPidCallback
             if(JSON.stringify(callback) !== "{}") {
                 callback(idArr);
@@ -610,7 +613,7 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 折叠回调函数
-        _hideByPidCallback = (idArr) => {
+        _hideByPidCallback(idArr) {
             let callback = this.config.hideByPidCallback
             if(JSON.stringify(callback) !== "{}") {
                 callback(idArr);
