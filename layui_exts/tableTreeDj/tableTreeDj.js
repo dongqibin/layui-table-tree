@@ -31,7 +31,7 @@ layui.define(['table', 'jquery'], function(exports) {
             this.runTemplate = {
                 hasChild: {} // 是否有子级[id=>true]
                 , level: {} // 层级 [id=>0]
-                , parentCHild: {} // 父子级关系 [pid=> [id, id]]
+                , parentChild: {} // 父子级关系 [pid=> [id, id]]
                 , dataIndex: {} // 表格 data-index 与 数据id 的对应关系
                 , unfoldStatus: {} // id=>true ,true展开, false折叠.
             }
@@ -50,6 +50,10 @@ layui.define(['table', 'jquery'], function(exports) {
                 this.objTable = obj;
             } else {
                 obj = this.objTable;
+            }
+            if(obj.url == null) {
+                console.error("url不可为空");
+                return;
             }
 
             if(!!config) {

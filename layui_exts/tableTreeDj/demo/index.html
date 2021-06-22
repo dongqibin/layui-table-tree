@@ -42,6 +42,16 @@
         const objTable = {
             elem: '#test'
             ,url: './getData.json'
+            /*
+            , data: [
+                {"id": 1, "pid": 0, "name": "顶层"},
+                {"id": 5, "pid": 1, "name": "第一层aaa"},
+                {"id": 2, "pid": 1, "name": "aaa222"},
+                {"id": 3, "pid": 1, "name": "第一层bbb"},
+                {"id": 4, "pid": 3, "name": "aaa111"},
+                {"id": 10, "pid": 9, "name": "aaa111"}
+            ]
+             //*/
             ,page:page
             ,limit: 10
             ,cols: cols
@@ -61,13 +71,13 @@
         }
 
         const objTree = {
-            showCache: true // 开启展开缓存
+            showCache: false // 开启展开缓存
             , sort: 'asc'
             , showByPidCallback: (idArr) => {
-                console.log('idArr', idArr);
+                //console.log('idArr', idArr);
             }
             , hideByPidCallback: (idArr) => {
-                console.log('idArr', idArr);
+                //console.log('idArr', idArr);
             }
         }
 
