@@ -3,12 +3,42 @@
   "msg1": "成功",
   "count1": 6,
   "data1": [
-    {"id": 1, "pid": 0, "name": "顶层"},
-    {"id": 5, "pid": 1, "name": "第一层aaa"},
-    {"id": 2, "pid": 1, "name": "aaa222"},
-    {"id": 3, "pid": 1, "name": "第一层bbb"},
-    {"id": 4, "pid": 3, "name": "aaa111"},
-    {"id": 10, "pid": 9, "name": "aaa111"}
+    {
+      "id": "a",
+      "pid": "0",
+      "name": "顶层",
+      "sort": 1
+    },
+    {
+      "id": "b",
+      "pid": "a",
+      "name": "第一层aaa",
+      "sort": 2
+    },
+    {
+      "id": "c",
+      "pid": "a",
+      "name": "aaa",
+      "sort": 4
+    },
+    {
+      "id": "d",
+      "pid": "a",
+      "name": "第一层bbb",
+      "sort": 3
+    },
+    {
+      "id": "e",
+      "pid": "c",
+      "name": "aaa111",
+      "sort": 50
+    },
+    {
+      "id": "f",
+      "pid": "c",
+      "name": "aaa222",
+      "sort": 6
+    }
   ]
 }
 

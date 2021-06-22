@@ -15,7 +15,7 @@ layui.define(['table', 'jquery'], function (exports) {
                     open: 'layui-icon layui-icon-triangle-d', // 展开时候图标
                     close: 'layui-icon layui-icon-triangle-r', // 折叠时候图标
                 }
-
+                , firstSort: {}//优先排序。次级排序按pid排
                 // 是否启用展开状态缓存
                 // 传true表示启用缓存,占用 localStorage的key = unfoldStatus
                 // 传具体字符串表示启用, 字符串会设置成key
@@ -56,6 +56,11 @@ layui.define(['table', 'jquery'], function (exports) {
                 this.config = $.extend(this.config, config);
             }
 
+            if (obj.hasOwnProperty('initSort')) {
+                this.config.firstSort.sortField = obj.initSort.field;
+                this.config.firstSort.sortType = obj.initSort.type;
+            }
+
             // 整理数据初始状态
             const parseData = obj.parseData || {};
             if (obj.url != null) {
@@ -63,10 +68,12 @@ layui.define(['table', 'jquery'], function (exports) {
                     if (JSON.stringify(parseData) !== "{}") {
                         res = parseData(res)
                     }
+                    this._sortData(res.data);
                     res.data = this._parse(res.data);
                     return res;
                 }
             } else if (obj.url == null && obj.hasOwnProperty('data')) {
+                this._sortData(obj.data);
                 obj.data = this._parse(obj.data);
             }
 
@@ -80,12 +87,20 @@ layui.define(['table', 'jquery'], function (exports) {
             }
 
             this._initDo(obj.url == null && obj.hasOwnProperty('data'), obj);
+            if (obj.hasOwnProperty('initSort')) {
+                delete obj.initSort;
+            }
             table.render(obj);
         }
 
         // 重载
         reload(obj, tableId) {
             if (obj.url == null && obj.hasOwnProperty('data')) {
+                if (obj.hasOwnProperty('initSort')) {
+                    this.config.firstSort.sortField = obj.initSort.field;
+                    this.config.firstSort.sortType = obj.initSort.type;
+                }
+                this._sortData(obj.data);
                 obj.data = this._parse(obj.data);
             }
             this._initDo(obj.url == null && obj.hasOwnProperty('data'), obj);
@@ -325,11 +340,28 @@ layui.define(['table', 'jquery'], function (exports) {
             if (!localData) {
                 // 初始化运行时配置参数
                 this.run = JSON.parse(JSON.stringify(this.runTemplate));
+            } else {
+                this.run.unfoldStatus = {};
             }
 
             const cache = this.getShowCache();
             if (cache) {
                 this.run.unfoldStatus = this.cache(cache) || {};
+            }
+        }
+
+        _sortData(data) {
+            if (this.config.firstSort.sortField === undefined) {
+                return;
+            }
+            const sortField = this.config.firstSort.sortField;
+            const sortType = this.config.firstSort.sortType;
+            if (sortField !== undefined) {
+                data.sort((a, b) => {
+                    // noinspection EqualityComparisonWithCoercionJS
+                    const compare = a[sortField] == b[sortField] ? 0 : a[sortField] > b[sortField] ? 1 : -1;
+                    return sortType === 'desc' ? compare * -1 : compare;
+                });
             }
         }
 
@@ -340,7 +372,8 @@ layui.define(['table', 'jquery'], function (exports) {
             // 按 pid 排序
             const keyPid = this.getKeyPid();
             data.sort((x, y) => {
-                return x[keyPid] - y[keyPid];
+                // noinspection EqualityComparisonWithCoercionJS
+                return x[keyPid] == y[keyPid] ? 0 : x[keyPid] > y[keyPid] ? 1 : -1;
             });
 
             // 计算子级
@@ -398,8 +431,13 @@ layui.define(['table', 'jquery'], function (exports) {
                     // 下级展开
                     that.showByPid(id, layId);
                 } else {
-                    // 下级折叠
-                    that.hideByPid(id, layId);
+                    if (item.hasOwnProperty('open') && item.open === true) {
+                        // 下级展开
+                        that.showByPid(id, layId);
+                    } else {
+                        // 下级折叠
+                        that.hideByPid(id, layId);
+                    }
                 }
             });
 
@@ -479,7 +517,7 @@ layui.define(['table', 'jquery'], function (exports) {
 
             const dataTop = [];
             for (let key in level) {
-                if (level[key] === 0) {
+                if (level[key] == 0) {
                     if (sort === 'asc') {
                         dataTop.push(key);
                     } else {
@@ -488,10 +526,15 @@ layui.define(['table', 'jquery'], function (exports) {
                 }
             }
 
+            const dataMap = {};
+            data.forEach((item) => {
+                dataMap[item[this.getKeyId()]] = item;
+            });
+
+
             let dataTopHas = dataTop.length > 0;
             while (dataTopHas) {
-                const id = parseInt(dataTop[0]);
-
+                const id = dataTop[0];
 
                 const i = this._getdataOriIndexById(id, data);
                 if (i === undefined) {
@@ -509,10 +552,18 @@ layui.define(['table', 'jquery'], function (exports) {
                 dataTop.splice(0, 1);
 
                 const child = pc[id];
+
                 if (child) {
-                    if (sort !== 'asc') {
+                    if (this.config.firstSort.sortField) {
+                        const childrenData = [];
+                        child.forEach((childData) => {
+                            childrenData.push(dataMap[childData]);
+                        })
+                        this._sortData(childrenData);
+                    } else {
                         child.sort((x, y) => {
-                            return y - x;
+                            const compare = y == x ? 0 : y > x ? -1 : 1;
+                            return sort === 'desc' ? compare * -1 : compare;
                         });
                     }
                     dataTop.splice(0, 0, ...child);
@@ -529,11 +580,13 @@ layui.define(['table', 'jquery'], function (exports) {
             const keyId = this.getKeyId();
             for (let i = 0; i < data.length; i++) {
                 const line = data[i];
-                if (line[keyId] === id) {
+                // 存在数据id为数字时，level的key为字符串，用恒等会导致判断出错
+                // noinspection EqualityComparisonWithCoercionJS
+                if (line[keyId] == id) {
                     return i;
                 }
             }
-            return false;
+            return undefined;
         }
 
         // 显示缩进 - 标题前面增加缩进字符串
@@ -562,6 +615,19 @@ layui.define(['table', 'jquery'], function (exports) {
             const keyId = this.getKeyId();
             const keyPid = this.getKeyPid();
 
+            const levelData = {};
+            data.forEach((item) => {
+                levelData[item[keyId]] = item;
+            });
+
+            const getLevel = (itemId, currentLevel) => {
+                if (levelData[itemId] != null) {
+                    currentLevel += 1;
+                    return getLevel(levelData[itemId][keyPid], currentLevel);
+                }
+                return currentLevel;
+            };
+
             data.forEach((item) => {
                 const id = item[keyId];
                 const pid = item[keyPid];
@@ -570,14 +636,10 @@ layui.define(['table', 'jquery'], function (exports) {
                     level[id] = 0;
                 } else {
                     // 如果不是顶级, 从 level 中取上级的level, 加1 存入 level 中
-                    const levelItem = level[pid];
-                    if (typeof (levelItem) == "undefined") {
-                        level[id] = 0
-                    } else {
-                        level[id] = levelItem + 1;
-                    }
+                    level[id] = getLevel(pid, 0);
                 }
             });
+
             this.run.level = level;
         }
 

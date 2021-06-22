@@ -17,14 +17,14 @@
     layui.config({
         base: '../../../layui_exts/tableTreeDj/'
     });
-    layui.use('tableTreeDj', function() {
-         window.tableTree = layui.tableTreeDj;
+    layui.use('tableTreeDj', function () {
+        window.tableTree = layui.tableTreeDj;
         let $ = layui.$;
 
         // 分页配置
         const page = {
             elem: 'page'
-            , layout: ['prev', 'page', 'next', 'last','skip'] //自定义分页布局
+            , layout: ['prev', 'page', 'next', 'last', 'skip'] //自定义分页布局
             , groups: 5 //只显示 5 个连续页码
             , prev: '上一页'
             , next: '下一页'
@@ -33,31 +33,34 @@
 
         // 字段配置
         const cols = [[
-            {field:'name', title:'名称'}
-            ,{field:'id', title:'ID'}
-            ,{field:'pid', title:'上级ID'}
+            {field: 'name', title: '名称'}
+            , {field: 'sort', title: 'SORT'}
+            , {field: 'id', title: 'ID'}
+            , {field: 'pid', title: '上级ID'}
         ]];
 
         // 表格配置
         const objTable = {
             elem: '#test'
-            // ,url: './getData.json'  //url和data二选一，优先url
-            ,data: [
-                    {"id": 1, "pid": 0, "name": "顶层"},
-                    {"id": 5, "pid": 1, "name": "第一层aaa"},
-                    {"id": 2, "pid": 1, "name": "aaa222"},
-                    {"id": 3, "pid": 1, "name": "第一层bbb"},
-                    {"id": 4, "pid": 3, "name": "aaa111"},
-                    {"id": 10, "pid": 9, "name": "aaa111"}
-                ]
-            ,page:page
-            ,limit: 10
-            ,cols: cols
-            ,id: 'list'
-            ,done:function(res, curr, count) {
+            // , url: './getData.json'  //url和data二选一，优先url
+            , data:[
+                {"id": "b26a7bed26645039864a58fc9530de48", "pid": "0", "name": "顶层1",open:true},
+                {"id": "c32a7bed26645039864c32fc9530de32", "pid": "0", "name": "顶层2"},
+                {"id": "5a812646ecf25d6c9f1951320f5f15df", "pid": "b26a7bed26645039864a58fc9530de48", "name": "第一层aaa",sort:5},
+                {"id": "9fd3dcc30ec95f059d866e66f30de1d4", "pid": "b26a7bed26645039864a58fc9530de48", "name": "第一层000",sort:20},
+                {"id": "9acb151537f6555d918f8059c196198c", "pid": "b26a7bed26645039864a58fc9530de48", "name": "第一层bbb",sort:3},
+                {"id": "a913db2f99775b1098ae5621b699c091", "pid": "5a812646ecf25d6c9f1951320f5f15df", "name": "aaa111",sort:4},
+                {"id": "1b2945c5474756bda51294bd59c28ad0", "pid": "a913db2f99775b1098ae5621b699c091", "name": "a10",sort:10}
+            ]
+            , page: page
+            , limit: 10
+            , cols: cols
+            , id: 'list'
+            , initSort: {field: 'sort', type: 'desc'}
+            , done: function (res, curr, count) {
 
             }
-            ,parseData:function(res) {
+            , parseData: function (res) {
                 return {
                     "code": res.code1, //解析接口状态
                     "msg": res.msg1, //解析提示文本
@@ -65,12 +68,12 @@
                     "data": res.data1 //解析数据列表
                 };
             }
-            ,loading:true
+            , loading: true
         }
 
         const objTree = {
-            showCache: true // 开启展开缓存
-            , sort: 'asc'
+            showCache: false // 开启展开缓存
+            , sort: 'desc'
             , showByPidCallback: (idArr) => {
                 console.log('idArr', idArr);
             }

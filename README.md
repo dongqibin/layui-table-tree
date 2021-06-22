@@ -28,8 +28,8 @@ https://www.layui.com/doc/base/modules.html#extend
     - 如果传false表示不使用缓存.此时渲染完成的状态为全部折叠; 
     - 如果传true.会把操作过程中的展开折叠状态记录到 localStorage 中.key为 unfoldStatus; 
     - 可以传一个字符串.这时候与传true类似,区别是 localStorage 的 key 为传入的字符串.建议传字符串.可以有效避免多个页面之间的冲突.
-* sort: 排序方式,可选值为 asc / desc, 默认 asc.必须小写.会影响所有层级.
-
+* sort: pid排序方式,可选值为 asc / desc, 默认 asc.必须小写.会影响所有层级.
+* layui的table的参数 initSort: {field: 'sort', type: 'desc'}，为第二排序功能，影响同级别的对象排序
 以上参数都可以不传(在与默认值完全一致的情况下).
 
 #### 特别说明
@@ -48,27 +48,29 @@ layui.use(['tableTreeDj'], function() {
         const objTable = {
             elem: '#test'
             // ,url: "./getData" //url与data二选一，优先url
-            ,data: [
-              {"id": 1, "pid": 0, "name": "顶层"},
-              {"id": 5, "pid": 1, "name": "第一层aaa"},
-              {"id": 2, "pid": 1, "name": "aaa222"},
-              {"id": 3, "pid": 1, "name": "第一层bbb"},
-              {"id": 4, "pid": 3, "name": "aaa111"},
-              {"id": 10, "pid": 9, "name": "aaa111"}
-            ]
+          , data:[
+            {"id": "b26a7bed26645039864a58fc9530de48", "pid": "0", "name": "顶层1",open:true},//参数open=true表示此节点默认展开
+            {"id": "c32a7bed26645039864c32fc9530de32", "pid": "0", "name": "顶层2"},
+            {"id": "5a812646ecf25d6c9f1951320f5f15df", "pid": "b26a7bed26645039864a58fc9530de48", "name": "第一层aaa",sort:5},
+            {"id": "9fd3dcc30ec95f059d866e66f30de1d4", "pid": "b26a7bed26645039864a58fc9530de48", "name": "第一层000",sort:20},
+            {"id": "9acb151537f6555d918f8059c196198c", "pid": "b26a7bed26645039864a58fc9530de48", "name": "第一层bbb",sort:3},
+            {"id": "a913db2f99775b1098ae5621b699c091", "pid": "5a812646ecf25d6c9f1951320f5f15df", "name": "aaa111",sort:4},
+            {"id": "1b2945c5474756bda51294bd59c28ad0", "pid": "a913db2f99775b1098ae5621b699c091", "name": "a10",sort:10}
+          ]
             ,cols: [[
-                {field:'name', title:'名称' },
-                {field:'id', title:'ID' },
-                {field:'pid', title:'上级ID' },
-                {field:'level', title:'层级' },
-                {field:'agent_id', title:'代理ID' },
+              {field: 'name', title: '名称'}
+              , {field: 'sort', title: 'SORT'}
+              , {field: 'id', title: 'ID'}
+              , {field: 'pid', title: '上级ID'}
             ]]
             ,id:'list'
+            , initSort: {field: 'sort', type: 'desc'}//设置同级别对象按sort值排序，优先级高于下面的config.sort。上面数据中，第一层aaa、第一层000、第一层bbb 将按照 第一层000、第一层aaa、第一层bbb 的顺序展示
         }
 
         // 本组件用到的参数, 组件内部有默认值,与此一致,因此您可以只声明不一致的配置项
         const config = {
             keyId: "id" // 当前ID
+            , sort: 'desc'//pid排序方式。上面数据中，顶层1、顶层2 将按照 顶层2、顶层1 的顺序展示
             , keyPid: "pid" // 上级ID
             , title: "name" // 标题名称字段,此字段td用于绑定单击折叠展开功能
             , indent: ' &nbsp; &nbsp;' // 子级td的缩进.可以是其他字符
