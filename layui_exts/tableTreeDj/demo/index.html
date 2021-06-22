@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="../../../layui/src/css/layui.css" media="all">
-    <script type="text/javascript" src="../../../layui/src/layui.all.js"></script>
+    <link rel="stylesheet" href="../../../layui/css/layui.css" media="all">
+    <script type="text/javascript" src="../../../layui/layui.js"></script>
 </head>
 <body>
 
@@ -18,7 +18,7 @@
         base: '../../../layui_exts/tableTreeDj/'
     });
     layui.use('tableTreeDj', function() {
-        let tableTree = layui.tableTreeDj;
+         window.tableTree = layui.tableTreeDj;
         let $ = layui.$;
 
         // 分页配置
@@ -41,7 +41,15 @@
         // 表格配置
         const objTable = {
             elem: '#test'
-            ,url: './getData.json'
+            // ,url: './getData.json'  //url和data二选一，优先url
+            ,data: [
+                    {"id": 1, "pid": 0, "name": "顶层"},
+                    {"id": 5, "pid": 1, "name": "第一层aaa"},
+                    {"id": 2, "pid": 1, "name": "aaa222"},
+                    {"id": 3, "pid": 1, "name": "第一层bbb"},
+                    {"id": 4, "pid": 3, "name": "aaa111"},
+                    {"id": 10, "pid": 9, "name": "aaa111"}
+                ]
             ,page:page
             ,limit: 10
             ,cols: cols

@@ -5,6 +5,8 @@
 正因为如此,您可以像使用表格组件一样使用该组件.layui的表格功能全都有.全都有.全都有.
 注意: 本组件对数据有要求.要求父节点的ID小于子节点.否则会显示异常.
 
+### 重要：虽然官方的table支持分页，但是使用本扩展将其扩展为支持树的table时，强烈不建议使用分页。毕竟整个树分页，不好界定分页条件，会导致数据隔断，从而出现分页后，原本应为第二级的，因为找不到父级二成为了第一级的情况发生。
+
 #### 组件引入方法请阅读 官方文档
 https://www.layui.com/doc/base/modules.html#extend
 
@@ -45,7 +47,15 @@ layui.use(['tableTreeDj'], function() {
         // 与 layui.table 的参数完全一致,内部本来就是把这些参数传递给table模块的
         const objTable = {
             elem: '#test'
-            ,url: "./getData"
+            // ,url: "./getData" //url与data二选一，优先url
+            ,data: [
+              {"id": 1, "pid": 0, "name": "顶层"},
+              {"id": 5, "pid": 1, "name": "第一层aaa"},
+              {"id": 2, "pid": 1, "name": "aaa222"},
+              {"id": 3, "pid": 1, "name": "第一层bbb"},
+              {"id": 4, "pid": 3, "name": "aaa111"},
+              {"id": 10, "pid": 9, "name": "aaa111"}
+            ]
             ,cols: [[
                 {field:'name', title:'名称' },
                 {field:'id', title:'ID' },

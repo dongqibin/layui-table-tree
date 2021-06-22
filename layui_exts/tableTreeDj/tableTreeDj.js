@@ -1,4 +1,4 @@
-layui.define(['table', 'jquery'], function(exports) {
+layui.define(['table', 'jquery'], function (exports) {
     const MOD_NAME = 'tableTreeDj';
     const $ = layui.jquery;
     const table = layui.table;
@@ -22,16 +22,16 @@ layui.define(['table', 'jquery'], function(exports) {
                 , showCache: false
                 , sort: 'asc' // 排序方式.['asc', 'desc'].必须小写
                 // 点击展开时候的回调函数
-                ,showByPidCallback: {}
+                , showByPidCallback: {}
 
                 // 点击折叠时候的回调函数
-                ,hideByPidCallback: {}
+                , hideByPidCallback: {}
             };
             // 运行数据模板
             this.runTemplate = {
                 hasChild: {} // 是否有子级[id=>true]
                 , level: {} // 层级 [id=>0]
-                , parentCHild: {} // 父子级关系 [pid=> [id, id]]
+                , parentChild: {} // 父子级关系 [pid=> [id, id]]
                 , dataIndex: {} // 表格 data-index 与 数据id 的对应关系
                 , unfoldStatus: {} // id=>true ,true展开, false折叠.
             }
@@ -46,42 +46,49 @@ layui.define(['table', 'jquery'], function(exports) {
         // 渲染
         render(obj, config) {
             // 此操作是为了在多次调用render方法的时候,可以忽略obj参数
-            if(!!obj) {
+            if (!!obj) {
                 this.objTable = obj;
             } else {
                 obj = this.objTable;
             }
 
-            if(!!config) {
+            if (!!config) {
                 this.config = $.extend(this.config, config);
             }
 
             // 整理数据初始状态
             const parseData = obj.parseData || {};
-            obj.parseData = (res) => {
-                if(JSON.stringify(parseData) !== "{}") {
-                    res = parseData(res)
+            if (obj.url != null) {
+                obj.parseData = (res) => {
+                    if (JSON.stringify(parseData) !== "{}") {
+                        res = parseData(res)
+                    }
+                    res.data = this._parse(res.data);
+                    return res;
                 }
-                res.data = this._parse(res.data);
-                return res;
+            } else if (obj.url == null && obj.hasOwnProperty('data')) {
+                obj.data = this._parse(obj.data);
             }
 
             // 数据渲染完成后,执行隐藏操作
             const done = obj.done || {};
             obj.done = (res, curr, count) => {
                 this._done(obj, res, curr, count);
-                if(JSON.stringify(done) !== "{}") {
+                if (JSON.stringify(done) !== "{}") {
                     done(res, curr, count);
                 }
             }
 
-            this._initDo();
+            this._initDo(obj.url == null && obj.hasOwnProperty('data'), obj);
             table.render(obj);
         }
 
         // 重载
         reload(obj, tableId) {
-            this._initDo();
+            if (obj.url == null && obj.hasOwnProperty('data')) {
+                obj.data = this._parse(obj.data);
+            }
+            this._initDo(obj.url == null && obj.hasOwnProperty('data'), obj);
             tableId = tableId || this.objTable.id;
             table.reload(tableId, obj);
         }
@@ -99,8 +106,8 @@ layui.define(['table', 'jquery'], function(exports) {
             const dataIndex = this.getDataIndex();
             const layId = obj.id;
 
-            for(let id in dataIndex) {
-                if(!!this.run.hasChild[id]) {
+            for (let id in dataIndex) {
+                if (!!this.run.hasChild[id]) {
                     this.hideByPid(id, layId);
                 }
             }
@@ -111,31 +118,31 @@ layui.define(['table', 'jquery'], function(exports) {
             const dataIndex = this.getDataIndex();
             const layId = obj.id;
 
-            for(let id in dataIndex) {
-                if(!!this.run.hasChild[id]) {
+            for (let id in dataIndex) {
+                if (!!this.run.hasChild[id]) {
                     this.showByPid(id, layId);
                 }
             }
         }
 
         getElemTrByIndex(layId, index) {
-            return $("[lay-id='"+ layId +"'] table tr[data-index='"+ index +"']");
+            return $("[lay-id='" + layId + "'] table tr[data-index='" + index + "']");
         }
 
         getElemTdByIndex(layId, index) {
             const title = this.getTitle();
-            return $("[lay-id='"+ layId +"'] table tr[data-index='"+ index +"'] td[data-field="+ title +"]");
+            return $("[lay-id='" + layId + "'] table tr[data-index='" + index + "'] td[data-field=" + title + "]");
         }
 
         getElemIconByIndex(layId, index) {
             const title = this.getTitle();
-            return $("[lay-id='"+ layId +"'] table tr[data-index='"+ index +"'] td[data-field="+ title +"] div span");
+            return $("[lay-id='" + layId + "'] table tr[data-index='" + index + "'] td[data-field=" + title + "] div span");
         }
 
         // 根据父元素隐藏子元素
         hideByPid(id, layId) {
             const idArr = this.getParentChild(id);
-            if(!idArr) {
+            if (!idArr) {
                 return false;
             }
 
@@ -164,7 +171,7 @@ layui.define(['table', 'jquery'], function(exports) {
 
         showByPid(id, layId) {
             const idArr = this.getParentChild(id);
-            if(!idArr) {
+            if (!idArr) {
                 return false;
             }
 
@@ -205,8 +212,8 @@ layui.define(['table', 'jquery'], function(exports) {
         // 根据 id 获取 索引
         getIndexById(data, id) {
             const keyId = this.getKeyId();
-            for(let i=0; i<data.length; i++) {
-                if(data[i][keyId] === id) {
+            for (let i = 0; i < data.length; i++) {
+                if (data[i][keyId] === id) {
                     return i + 1;
                 }
             }
@@ -246,7 +253,7 @@ layui.define(['table', 'jquery'], function(exports) {
 
         // 获取层级
         getLevel(id) {
-            if(!!id) {
+            if (!!id) {
                 return this.run.level[id];
             }
             return this.run.level;
@@ -254,7 +261,7 @@ layui.define(['table', 'jquery'], function(exports) {
 
         // 获取父子级关系
         getParentChild(id) {
-            if(!!id) {
+            if (!!id) {
                 return this.run.parentChild[id];
             }
             return this.run.parentChild;
@@ -272,7 +279,7 @@ layui.define(['table', 'jquery'], function(exports) {
 
         // 获取展开的id
         getUnfoldStatus(id) {
-            if(!!id) {
+            if (!!id) {
                 return this.run.unfoldStatus[id] || false;
             }
             return this.run.unfoldStatus;
@@ -284,7 +291,7 @@ layui.define(['table', 'jquery'], function(exports) {
             this.run.unfoldStatus[id] = flag;
 
             const cache = this.getShowCache();
-            if(cache) {
+            if (cache) {
                 this.cache(cache, this.run.unfoldStatus);
             }
         }
@@ -292,7 +299,7 @@ layui.define(['table', 'jquery'], function(exports) {
         // 获取是否启用展示缓存,返回值是 缓存的 key
         getShowCache() {
             let cache = this.config.showCache;
-            if(cache === true) {
+            if (cache === true) {
                 return "unfoldStatus";
             }
             return cache;
@@ -305,7 +312,7 @@ layui.define(['table', 'jquery'], function(exports) {
 
         // 缓存操作
         cache(key, val) {
-            if(val) {
+            if (val) {
                 val = JSON.stringify(val);
                 localStorage.setItem(key, val);
             }
@@ -314,18 +321,22 @@ layui.define(['table', 'jquery'], function(exports) {
 
         // ================= 私有方法 ===================
 
-        _initDo() {
-            // 初始化运行时配置参数
-            this.run = JSON.parse(JSON.stringify(this.runTemplate));
+        _initDo(localData) {
+            if (!localData) {
+                // 初始化运行时配置参数
+                this.run = JSON.parse(JSON.stringify(this.runTemplate));
+            }
 
             const cache = this.getShowCache();
-            if(cache) {
+            if (cache) {
                 this.run.unfoldStatus = this.cache(cache) || {};
             }
         }
 
         // 数据整理(总) - 获取数据之后,渲染数据之前.
         _parse(data) {
+            if (data.length === 0)
+                return [];
             // 按 pid 排序
             const keyPid = this.getKeyPid();
             data.sort((x, y) => {
@@ -383,7 +394,7 @@ layui.define(['table', 'jquery'], function(exports) {
 
                 // 判断当前折叠还是展开
                 const unfoldId = that.getUnfoldStatus(id);
-                if(unfoldId) {
+                if (unfoldId) {
                     // 下级展开
                     that.showByPid(id, layId);
                 } else {
@@ -408,16 +419,17 @@ layui.define(['table', 'jquery'], function(exports) {
 
                 const param = {
                     id: id
-                    ,index: index
+                    , index: index
                 }
 
                 // 先取消后绑定.以防止重复绑定
-                elem.off('click').bind('click', param, function(param) {
+                elem.off('click').bind('click', param, function (param) {
+
                     const id = param.data.id;
 
                     // 判断当前折叠还是展开
                     const unfoldId = that.getUnfoldStatus(id);
-                    if(unfoldId) {
+                    if (unfoldId) {
                         // 下级折叠
                         that.hideByPid(id, layId);
                     } else {
@@ -448,7 +460,7 @@ layui.define(['table', 'jquery'], function(exports) {
             data.forEach((item) => {
                 const id = item[keyId];
                 const pid = item[keyPid];
-                if(pid !== this.run.minPid) {
+                if (pid !== this.run.minPid) {
                     const parent = parentChild[pid] || [];
                     parent.push(id);
                     parentChild[pid] = parent;
@@ -466,9 +478,9 @@ layui.define(['table', 'jquery'], function(exports) {
             const sort = this.getSort();
 
             const dataTop = [];
-            for(let key in level) {
-                if(level[key] === 0) {
-                    if(sort === 'asc') {
+            for (let key in level) {
+                if (level[key] === 0) {
+                    if (sort === 'asc') {
                         dataTop.push(key);
                     } else {
                         dataTop.splice(0, 0, key);
@@ -482,7 +494,7 @@ layui.define(['table', 'jquery'], function(exports) {
 
 
                 const i = this._getdataOriIndexById(id, data);
-                if(i === undefined) {
+                if (i === undefined) {
                     dataTop.splice(0, 1);
                     dataTopHas = dataTop.length > 0;
                     continue;
@@ -497,8 +509,8 @@ layui.define(['table', 'jquery'], function(exports) {
                 dataTop.splice(0, 1);
 
                 const child = pc[id];
-                if(child) {
-                    if(sort !== 'asc') {
+                if (child) {
+                    if (sort !== 'asc') {
                         child.sort((x, y) => {
                             return y - x;
                         });
@@ -515,9 +527,9 @@ layui.define(['table', 'jquery'], function(exports) {
         // 获取某id=x所在某个数组的位置
         _getdataOriIndexById(id, data) {
             const keyId = this.getKeyId();
-            for(let i=0; i<data.length; i++) {
+            for (let i = 0; i < data.length; i++) {
                 const line = data[i];
-                if(line[keyId] === id) {
+                if (line[keyId] === id) {
                     return i;
                 }
             }
@@ -535,7 +547,7 @@ layui.define(['table', 'jquery'], function(exports) {
             data.forEach((item) => {
                 const id = item[keyId];
                 const title = this.getTitle();
-                for(let i=0; i<level[id]; i++) {
+                for (let i = 0; i < level[id]; i++) {
                     item[title] = indent + item[title];
                 }
                 tmp.push(item);
@@ -553,13 +565,13 @@ layui.define(['table', 'jquery'], function(exports) {
             data.forEach((item) => {
                 const id = item[keyId];
                 const pid = item[keyPid];
-                if(pid === this.run.minPid) {
+                if (pid === this.run.minPid) {
                     // 如果是顶级,则直接加入到 level 中
                     level[id] = 0;
                 } else {
                     // 如果不是顶级, 从 level 中取上级的level, 加1 存入 level 中
                     const levelItem = level[pid];
-                    if(typeof(levelItem) == "undefined") {
+                    if (typeof (levelItem) == "undefined") {
                         level[id] = 0
                     } else {
                         level[id] = levelItem + 1;
@@ -580,8 +592,8 @@ layui.define(['table', 'jquery'], function(exports) {
                 const id = item[keyId];
                 const title = this.getTitle();
                 const iconClose = this.getIconClose();
-                if(hasChild[id]) {
-                    item[title] = '<span class="'+ iconClose +'"></span>' + item[title];
+                if (hasChild[id]) {
+                    item[title] = '<span class="' + iconClose + '"></span>' + item[title];
                 }
                 tmp.push(item);
             });
@@ -607,7 +619,7 @@ layui.define(['table', 'jquery'], function(exports) {
         // 展开回调函数
         _showByPidCallback(idArr) {
             let callback = this.config.showByPidCallback
-            if(JSON.stringify(callback) !== "{}") {
+            if (JSON.stringify(callback) !== "{}") {
                 callback(idArr);
             }
         }
@@ -615,7 +627,7 @@ layui.define(['table', 'jquery'], function(exports) {
         // 折叠回调函数
         _hideByPidCallback(idArr) {
             let callback = this.config.hideByPidCallback
-            if(JSON.stringify(callback) !== "{}") {
+            if (JSON.stringify(callback) !== "{}") {
                 callback(idArr);
             }
         }
