@@ -29,11 +29,14 @@ layui.define(['table', 'jquery'], function(exports) {
             };
             // 运行数据模板
             this.runTemplate = {
-                hasChild: {} // 是否有子级[id=>true]
-                , level: {} // 层级 [id=>0]
+                hasChild: [] // 是否有子级[id=>true]
                 , parentChild: {} // 父子级关系 [pid=> [id, id]]
+                , level: {} // 层级 [id=>0]
+                , childParent: {} // 子级与父级对应关系 [id=>pid]
                 , dataIndex: {} // 表格 data-index 与 数据id 的对应关系
                 , unfoldStatus: {} // id=>true ,true展开, false折叠.
+                , idArr: [] // id数组
+                , pidArr: [] // pid数组
             }
             // 实际运行时候的数据
             this.run = {}
@@ -41,7 +44,6 @@ layui.define(['table', 'jquery'], function(exports) {
             // table参数,作为中转变量,以期二次渲染的时候不用再次传入
             this.objTable = {};
         }
-
 
         // 渲染
         render(obj, config) {
@@ -104,7 +106,7 @@ layui.define(['table', 'jquery'], function(exports) {
             const layId = obj.id;
 
             for(let id in dataIndex) {
-                if(!!this.run.hasChild[id]) {
+                if(this.run.hasChild.indexOf(id) !== -1) {
                     this.hideByPid(id, layId);
                 }
             }
@@ -116,7 +118,7 @@ layui.define(['table', 'jquery'], function(exports) {
             const layId = obj.id;
 
             for(let id in dataIndex) {
-                if(!!this.run.hasChild[id]) {
+                if(this.run.hasChild.indexOf(id) !== -1) {
                     this.showByPid(id, layId);
                 }
             }
@@ -204,17 +206,6 @@ layui.define(['table', 'jquery'], function(exports) {
         showByDataIndex(layId, index) {
             const elem = this.getElemTrByIndex(layId, index);
             elem.removeClass('layui-hide');
-        }
-
-        // 根据 id 获取 索引
-        getIndexById(data, id) {
-            const keyId = this.getKeyId();
-            for(let i=0; i<data.length; i++) {
-                if(data[i][keyId] === id) {
-                    return i + 1;
-                }
-            }
-            return 0;
         }
 
         // ================== 获取器 ====================
@@ -322,59 +313,135 @@ layui.define(['table', 'jquery'], function(exports) {
             // 初始化运行时配置参数
             this.run = JSON.parse(JSON.stringify(this.runTemplate));
 
+            // 获取缓存
             const cache = this.getShowCache();
             if(cache) {
                 this.run.unfoldStatus = this.cache(cache) || {};
             }
         }
 
-        // 数据整理(总) - 获取数据之后,渲染数据之前.
-        _parse(data) {
-            // 按 pid 排序
+        // 整理渲染时候的数据.this.run
+        _parseInit(data) {
+            const keyId = this.getKeyId();
             const keyPid = this.getKeyPid();
-            data.sort((x, y) => {
-                return x[keyPid] - y[keyPid];
+
+            // 将ID改为字符串,因为既当key又当value.会把整型改为字符串类型,所以这里统一改成字符串型
+            for(let i=0; i<data.length; i++) {
+                data[i][keyId] = data[i][keyId]+"";
+                data[i][keyPid] = data[i][keyPid]+"";
+            }
+
+            // 一. 获取id数组
+            data.forEach((obj) => {
+                const id = obj[keyId];
+                this.run.idArr.push(id);
             });
 
-            // 计算子级
-            this._disposalHasChild(data);
+            // 二. pid数组
+            data.forEach((obj) => {
+                const pid = obj[keyPid];
+                if(this.run.idArr.indexOf(pid) !== -1) {
+                    // 判断本条pid对应的数据是否存在
+                    if(this.run.pidArr.indexOf(pid) === -1) {
+                        // 如果没有才添加
+                        this.run.pidArr.push(pid);
+                    }
+                }
+            });
 
+            // 三. 子级与父级 / 父级与子级 对应关系
+            data.forEach((obj) => {
+                const id = obj[keyId];
+                const pid = obj[keyPid];
+
+                if(this.run.idArr.indexOf(id) !== -1 && this.run.pidArr.indexOf(pid) !== -1) {
+                    // 整理子级与父级对应关系
+                    this.run.childParent[id] = pid;
+
+                    // 整理父级与子级对应关系
+                    let parentChild = this.run.parentChild[pid] || [];
+                    parentChild.push(id);
+                    this.run.parentChild[pid] = parentChild;
+                }
+            });
+
+            // 四. hasChild, level
+            data.forEach((obj) => {
+                const id = obj[keyId];
+                const pid = obj[keyPid];
+
+                // 1. 整理 hasChild
+                if(this.run.idArr.indexOf(pid) !== -1) {
+                    // 数据真实存在才添加到 hasChild
+                    // 1. 整理 hasChild 是否有子级[id1, id2, id3]
+                    if (this.run.hasChild.indexOf(pid) === -1) {
+                        // 没有才追加
+                        this.run.hasChild.push(pid);
+                    }
+                }
+
+                // 2. 整理 level, 根据当前向上找pid.一直找到不存在.
+                let hasParent = true;
+                let level = 0;
+                let idCheck = id;
+                while(hasParent) {
+                    // 判断当前父级是否存在.不存在则退出
+                    if(!this.run.childParent.hasOwnProperty(idCheck)) {
+                        hasParent = false;
+                        break;
+                    }
+
+                    // 获取父级ID,用于下次检测
+                    idCheck = this.run.childParent[idCheck];
+                    level++;
+                }
+                this.run.level[id] = level;
+
+            });
+        }
+
+        // 开始渲染
+        _parseDo(data) {
             // 显示图标 -- 给标题增加图标span
             data = this._showIcon(data);
 
-            // 计算最小pid当做顶级.因为某种情况下.顶级的pid不一定是0
-            this._minPid(data);
-
-            // 计算层级
-            this._disposalLevel(data);
-
-            // 缩进显示
+            // 显示缩进
             data = this._showIndent(data);
-
-            // 整理父子级关系,只有两级,毕竟点击上级只展开下级.下级的下级并没有展开的需求
-            this._disposalParentChild(data);
 
             // 排序, 使子级紧挨在父级下面
             data = this._disposalSortParent(data);
-
-            // 整理 data-index 与 id 的对应关系,点击得到 data-index => $(data-index) => id; id => dataIndex[id] => data-index
-            this._disposalDataIndex(data);
-
             return data;
         }
 
-        // 计算最小pid.因为某些情况下.最小pid不一定是0
-        _minPid(data) {
-            this.run.minPid = data[0][this.getKeyPid()] || 0;
+        // 数据整理(总) - 获取数据之后,渲染数据之前.
+        _parse(data) {
+            // 整理渲染时候的数据.this.run
+            this._parseInit(data);
+
+            // 开始渲染
+            data = this._parseDo(data)
+            return data;
+        }
+
+        // 整理done之前的准备工作
+        _doneInit(data) {
+            // 一点扫尾工作,必须等待整理完数据才可以执行
+            // 整理 data-index 与 id 的对应关系,点击得到 data-index => $(data-index) => id; id => dataIndex[id] => data-index
+            this._disposalDataIndex(data);
+        }
+
+        _doneDo(id, data) {
+            // 初始化展开状态, 根据缓存确定是否展开,缓存没有则隐藏子级
+            this._initShow(data, id);
+
+            // 给标题绑定点击事件
+            this._bindTitleClick(data, id);
         }
 
         // 数据渲染之后,执行的操作
         _done(obj, res, curr, count) {
-            // 初始化展开状态, 根据缓存确定是否展开,缓存没有则隐藏子级
-            this._initShow(res.data, obj.id);
-
-            // 给标题绑定点击事件
-            this._bindTitleClick(res.data, obj);
+            this._doneInit(res.data);
+            this._doneDo(obj.id, res.data);
         }
 
         // 初始化展开状态, 根据缓存确定是否展开
@@ -399,12 +466,11 @@ layui.define(['table', 'jquery'], function(exports) {
         }
 
         // 给标题绑定点击事件
-        _bindTitleClick(data, obj) {
+        _bindTitleClick(data, layId) {
             const that = this;
 
             const dataIndex = this.getDataIndex();
             const keyId = this.getKeyId();
-            const layId = obj.id;
             data.forEach((item) => {
                 const id = item[keyId];
                 const index = dataIndex[id];
@@ -412,7 +478,6 @@ layui.define(['table', 'jquery'], function(exports) {
 
                 const param = {
                     id: id
-                    ,index: index
                 }
 
                 // 先取消后绑定.以防止重复绑定
@@ -443,24 +508,6 @@ layui.define(['table', 'jquery'], function(exports) {
             this.run.dataIndex = dataIndex;
         }
 
-        // 整理数据 - 整理父子级关系 [pid => [id, id]]
-        _disposalParentChild(data) {
-            const parentChild = {}
-            const keyId = this.getKeyId();
-            const keyPid = this.getKeyPid();
-
-            data.forEach((item) => {
-                const id = item[keyId];
-                const pid = item[keyPid];
-                if(pid !== this.run.minPid) {
-                    const parent = parentChild[pid] || [];
-                    parent.push(id);
-                    parentChild[pid] = parent;
-                }
-            });
-            this.run.parentChild = parentChild;
-        }
-
         // 排序 - 使子级紧挨在父级下面
         _disposalSortParent(data) {
             const resData = [];
@@ -469,6 +516,7 @@ layui.define(['table', 'jquery'], function(exports) {
             const pc = this.getParentChild();
             const sort = this.getSort();
 
+            // 1. 先排序顶级
             const dataTop = [];
             for(let key in level) {
                 if(level[key] === 0) {
@@ -482,31 +530,23 @@ layui.define(['table', 'jquery'], function(exports) {
 
             let dataTopHas = dataTop.length > 0;
             while (dataTopHas) {
-                const id = parseInt(dataTop[0]);
-
+                const id = dataTop[0];
 
                 const i = this._getdataOriIndexById(id, data);
-                if(i === undefined) {
-                    dataTop.splice(0, 1);
-                    dataTopHas = dataTop.length > 0;
-                    continue;
-                }
 
                 // 先将值取出来存入 resData 中
                 resData.push(data[i]);
 
                 // 再从 data 中删除这个元素. 注意要用完再删
                 data.splice(i, 1);
-
                 dataTop.splice(0, 1);
 
-                const child = pc[id];
+                let child = pc[id];
                 if(child) {
                     if(sort !== 'asc') {
-                        child.sort((x, y) => {
-                            return y - x;
-                        });
+                        child = child.reverse();
                     }
+
                     dataTop.splice(0, 0, ...child);
                 }
 
@@ -539,38 +579,14 @@ layui.define(['table', 'jquery'], function(exports) {
             data.forEach((item) => {
                 const id = item[keyId];
                 const title = this.getTitle();
+                let indentItem = '';
                 for(let i=0; i<level[id]; i++) {
-                    item[title] = indent + item[title];
+                    indentItem = indentItem + indent
                 }
+                item[title] = indentItem + item[title];
                 tmp.push(item);
             })
             return tmp;
-        }
-
-        // 整理数据 - 层级[id=>level]
-        _disposalLevel(data) {
-            let level = {}; // id => level
-
-            const keyId = this.getKeyId();
-            const keyPid = this.getKeyPid();
-
-            data.forEach((item) => {
-                const id = item[keyId];
-                const pid = item[keyPid];
-                if(pid === this.run.minPid) {
-                    // 如果是顶级,则直接加入到 level 中
-                    level[id] = 0;
-                } else {
-                    // 如果不是顶级, 从 level 中取上级的level, 加1 存入 level 中
-                    const levelItem = level[pid];
-                    if(typeof(levelItem) == "undefined") {
-                        level[id] = 0
-                    } else {
-                        level[id] = levelItem + 1;
-                    }
-                }
-            });
-            this.run.level = level;
         }
 
         // 显示图标 - 标题增加span标签
@@ -584,28 +600,12 @@ layui.define(['table', 'jquery'], function(exports) {
                 const id = item[keyId];
                 const title = this.getTitle();
                 const iconClose = this.getIconClose();
-                if(hasChild[id]) {
+                if(hasChild.indexOf(id) !== -1) {
                     item[title] = '<span class="'+ iconClose +'"></span>' + item[title];
                 }
                 tmp.push(item);
             });
             return tmp;
-        }
-
-        // 整理数据 - 某数据是否有子级
-        _disposalHasChild(data) {
-            let hasChild = {};
-
-            const keyId = this.getKeyId();
-            const keyPid = this.getKeyPid();
-
-            data.forEach((item) => {
-                const id = item[keyId];
-                const pid = item[keyPid];
-                //hasChild[id] = false; // 在顺序混乱的情况下.会出现id=false覆盖pid=true的情况.id=pid的情况下.
-                hasChild[pid] = true;
-            });
-            this.run.hasChild = hasChild;
         }
 
         // 展开回调函数

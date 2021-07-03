@@ -1,0 +1,47 @@
+{
+  "code1": 0,
+  "msg1": "成功",
+  "count1": 6,
+  "data1": [
+    {
+      "id": "a3",
+      "name": "系统设置",
+      "icon": "layui-icon layui-icon-set",
+      "type": 0,
+      "hide": false,
+      "sorted": 2,
+      "pid": "0",
+      "createdAt": "2021-06-28 12:49:37"
+    },
+    {
+      "id": "a1",
+      "name": "字典管理",
+      "link": "a.html",
+      "type": 1,
+      "hide": false,
+      "sorted": 1,
+      "pid": "a3",
+      "createdAt": "2021-06-28 12:49:57"
+    },
+    {
+      "id": "a2",
+      "name": "菜单管理",
+      "link": "views/system/menu/menu.html",
+      "type": 1,
+      "hide": false,
+      "sorted": 1,
+      "pid": "a3",
+      "createdAt": "2021-06-30 02:02:08"
+    },
+    {
+      "id": "a0",
+      "name": "菜单管理",
+      "link": "views/system/menu/menu.html",
+      "type": 1,
+      "hide": false,
+      "sorted": 1,
+      "pid": "a1",
+      "createdAt": "2021-06-30 02:02:08"
+    }
+  ]
+}

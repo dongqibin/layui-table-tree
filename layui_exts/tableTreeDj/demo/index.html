@@ -12,12 +12,14 @@
 <div id="page"></div>
 <button id="show">展开</button>
 <button id="hide">折叠</button>
+<button id="reload">重载</button>
 
 <script type="text/javascript">
     layui.config({
         base: '../../../layui_exts/tableTreeDj/'
     });
     layui.use('tableTreeDj', function() {
+
         let tableTree = layui.tableTreeDj;
         let $ = layui.$;
 
@@ -42,16 +44,7 @@
         const objTable = {
             elem: '#test'
             ,url: './getData.json'
-            /*
-            , data: [
-                {"id": 1, "pid": 0, "name": "顶层"},
-                {"id": 5, "pid": 1, "name": "第一层aaa"},
-                {"id": 2, "pid": 1, "name": "aaa222"},
-                {"id": 3, "pid": 1, "name": "第一层bbb"},
-                {"id": 4, "pid": 3, "name": "aaa111"},
-                {"id": 10, "pid": 9, "name": "aaa111"}
-            ]
-             //*/
+            //,url: './getData0.json'
             ,page:page
             ,limit: 10
             ,cols: cols
@@ -71,8 +64,9 @@
         }
 
         const objTree = {
-            showCache: false // 开启展开缓存
+            showCache: true // 开启展开缓存
             , sort: 'asc'
+            , title: 'name'
             , showByPidCallback: (idArr) => {
                 //console.log('idArr', idArr);
             }
@@ -89,6 +83,14 @@
         });
         $('#hide').click(() => {
             tableTree.hideAll(objTable);
+        });
+        $('#reload').click(() => {
+            if(objTable.url === './getData0.json') {
+                objTable.url = './getData.json';
+            } else {
+                objTable.url = './getData0.json';
+            }
+            tableTree.reload(objTable, 'list');
         });
 
     });
