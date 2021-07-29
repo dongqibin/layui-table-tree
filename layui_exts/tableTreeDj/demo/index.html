@@ -43,7 +43,7 @@
         // 表格配置
         const objTable = {
             elem: '#test'
-            ,url: './getData0.json'
+            ,url: './getData.json'
             //,url: './getData0.json'
             ,page:page
             ,limit: 10
@@ -65,13 +65,13 @@
 
         const objTree = {
             showCache: true // 开启展开缓存
-            , sort: 'asc'
+            , sort: 'desc'
             , title: 'pid'
             , defaultShow: true
-            , showByPidCallback: (idArr) => {
+            , showByPidCallback: function(idArr) {
                 //console.log('idArr', idArr);
             }
-            , hideByPidCallback: (idArr) => {
+            , hideByPidCallback: function(idArr) {
                 //console.log('idArr', idArr);
             }
         }
@@ -79,13 +79,13 @@
         // tableTree 渲染表格
         tableTree.render(objTable, objTree);
 
-        $('#show').click(() => {
+        $('#show').click(function() {
             tableTree.showAll(objTable);
         });
-        $('#hide').click(() => {
+        $('#hide').click(function() {
             tableTree.hideAll(objTable);
         });
-        $('#reload').click(() => {
+        $('#reload').click(function() {
             /*
             if(objTable.url === './getData0.json') {
                 objTable.url = './getData.json';
