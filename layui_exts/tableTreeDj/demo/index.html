@@ -35,15 +35,15 @@
 
         // 字段配置
         const cols = [[
-            {field:'name', title:'名称'}
-            ,{field:'id', title:'ID'}
+            //{field:'name', title:'名称'}
+            {field:'id', title:'ID'}
             ,{field:'pid', title:'上级ID'}
         ]];
 
         // 表格配置
         const objTable = {
             elem: '#test'
-            ,url: './getData.json'
+            ,url: './getData0.json'
             //,url: './getData0.json'
             ,page:page
             ,limit: 10
@@ -66,7 +66,8 @@
         const objTree = {
             showCache: true // 开启展开缓存
             , sort: 'asc'
-            , title: 'name'
+            , title: 'pid'
+            , defaultShow: true
             , showByPidCallback: (idArr) => {
                 //console.log('idArr', idArr);
             }
@@ -85,11 +86,15 @@
             tableTree.hideAll(objTable);
         });
         $('#reload').click(() => {
+            /*
             if(objTable.url === './getData0.json') {
                 objTable.url = './getData.json';
             } else {
                 objTable.url = './getData0.json';
             }
+
+             */
+            objTable.where = {key:"val"}
             tableTree.reload(objTable, 'list');
         });
 

@@ -29,6 +29,9 @@ https://www.layui.com/doc/base/modules.html#extend
     - 如果传true.会把操作过程中的展开折叠状态记录到 localStorage 中.key为 unfoldStatus; 
     - 可以传一个字符串.这时候与传true类似,区别是 localStorage 的 key 为传入的字符串.建议传字符串.可以有效避免多个页面之间的冲突.
 * sort: 排序方式,可选值为 asc / desc, 默认 asc.必须小写.会影响所有层级.
+* defaultShow: 页面刷新以后,默认是否全部展开.可选值为true和false,默认为false, 当showCache里面缓存了展开状态的时候,优先以showCache为主.
+    - 在showCache开启并且defaultShow开启时候.第一次加载.showCache里面没数据.defaultShow配置生效,此时全部展开.
+    - 第一次加载以后.展开的状态信息会缓存进入showCache, 此时再次刷新,defaultShow不再生效,以showCache为准,望悉知.
 
 以上参数都可以不传(在与默认值完全一致的情况下).
 

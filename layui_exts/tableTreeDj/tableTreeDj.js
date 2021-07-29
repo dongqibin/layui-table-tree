@@ -26,6 +26,7 @@ layui.define(['table', 'jquery'], function(exports) {
 
                 // 点击折叠时候的回调函数
                 ,hideByPidCallback: {}
+                ,defaultShow: false // 全部展开,如果开启缓存,只有缓存里面没有展开状态时候此配置才生效.否则按缓存里面的展开状态来初始化数据
             };
             // 运行数据模板
             this.runTemplate = {
@@ -72,7 +73,7 @@ layui.define(['table', 'jquery'], function(exports) {
                 return res;
             }
 
-            // 数据渲染完成后,执行隐藏操作
+            // 数据渲染之后,执行的操作
             const done = obj.done || {};
             obj.done = (res, curr, count) => {
                 this._done(obj, res, curr, count);
@@ -415,6 +416,7 @@ layui.define(['table', 'jquery'], function(exports) {
 
         // 数据整理(总) - 获取数据之后,渲染数据之前.
         _parse(data) {
+            if(!data) data = [];
             // 整理渲染时候的数据.this.run
             this._parseInit(data);
 
@@ -430,9 +432,10 @@ layui.define(['table', 'jquery'], function(exports) {
             this._disposalDataIndex(data);
         }
 
-        _doneDo(id, data) {
-            // 初始化展开状态, 根据缓存确定是否展开,缓存没有则隐藏子级
-            this._initShow(data, id);
+        _doneDo(obj, data) {
+            const id = obj.id
+            // 初始化展开状态, 优先根据缓存确定是否展开,缓存没有则判断是否默认展开,以上不符合则隐藏子级
+            this._initShow(data, obj);
 
             // 给标题绑定点击事件
             this._bindTitleClick(data, id);
@@ -441,28 +444,44 @@ layui.define(['table', 'jquery'], function(exports) {
         // 数据渲染之后,执行的操作
         _done(obj, res, curr, count) {
             this._doneInit(res.data);
-            this._doneDo(obj.id, res.data);
+            this._doneDo(obj, res.data);
         }
 
         // 初始化展开状态, 根据缓存确定是否展开
-        _initShow(data, layId) {
+        _initShow(data, obj) {
+            const layId = obj.id
             const that = this;
 
-            const keyId = this.getKeyId();
-            data.forEach((item) => {
-                const id = item[keyId];
+            // 判断是否有缓存存在
+            const hasUnfold = that.getUnfoldStatus()
+            if(JSON.stringify(hasUnfold) !== '{}') {
+                const keyId = this.getKeyId();
+                console.log("keyId", keyId)
+                data.forEach((item) => {
+                    const id = item[keyId];
 
-                // 判断当前折叠还是展开
-                const unfoldId = that.getUnfoldStatus(id);
-                if(unfoldId) {
-                    // 下级展开
-                    that.showByPid(id, layId);
-                } else {
-                    // 下级折叠
-                    that.hideByPid(id, layId);
-                }
-            });
+                    // 判断当前折叠还是展开
+                    const unfoldId = that.getUnfoldStatus(id);
+                    if(unfoldId) {
+                        // 下级展开
+                        that.showByPid(id, layId);
+                    } else {
+                        // 下级折叠
+                        that.hideByPid(id, layId);
+                    }
+                });
+                return;
+            }
 
+            const defaultShow = that._getDefaultShow()
+            console.log("show", defaultShow)
+            if(defaultShow) {
+                // 如果缓存不存在,则判断是否配置全部展开
+                that.showAll(obj)
+            } else {
+                // 否则全部折叠
+                that.hideAll(obj)
+            }
         }
 
         // 给标题绑定点击事件
@@ -622,6 +641,15 @@ layui.define(['table', 'jquery'], function(exports) {
             if(JSON.stringify(callback) !== "{}") {
                 callback(idArr);
             }
+        }
+
+        // 获取是否默认展开
+        _getDefaultShow() {
+            return this.config.defaultShow
+        }
+
+        _setDefaultShow(defaultShow) {
+            this.config.defaultShow = defaultShow
         }
 
     }
