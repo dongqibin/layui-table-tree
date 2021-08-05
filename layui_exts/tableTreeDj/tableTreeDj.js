@@ -69,6 +69,7 @@ layui.define(['table', 'jquery'], function(exports) {
                 if(JSON.stringify(parseData) !== "{}") {
                     res = parseData(res)
                 }
+                this._initDo()
                 res.data = this._parse(res.data);
                 return res;
             }
@@ -82,7 +83,6 @@ layui.define(['table', 'jquery'], function(exports) {
                 }
             }
 
-            this._initDo();
             table.render(obj);
         }
 
