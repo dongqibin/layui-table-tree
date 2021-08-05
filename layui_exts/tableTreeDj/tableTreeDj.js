@@ -69,6 +69,7 @@ layui.define(['table', 'jquery'], function(exports) {
             if(JSON.stringify(parseData) !== "{}") {
                 res = parseData(res)
             }
+            that._initDo();
             res.data = that._parse(res.data);
             return res;
         }
@@ -82,7 +83,6 @@ layui.define(['table', 'jquery'], function(exports) {
             }
         }
 
-        this._initDo();
         table.render(obj);
     }
 
@@ -327,6 +327,7 @@ layui.define(['table', 'jquery'], function(exports) {
 
     // 整理渲染时候的数据.this.run
     Tree.prototype._parseInit = function(data) {
+        this.runTemplate
         var that = this
         var keyId = this.getKeyId();
         var keyPid = this.getKeyPid();
@@ -555,7 +556,7 @@ layui.define(['table', 'jquery'], function(exports) {
             var id = dataTop[0];
 
             var i = this._getdataOriIndexById(id, data);
-
+console.log(this.run);
             // 先将值取出来存入 resData 中
             resData.push(data[i]);
 
