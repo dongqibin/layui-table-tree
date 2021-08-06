@@ -5,7 +5,7 @@
 正因为如此,您可以像使用表格组件一样使用该组件.layui的表格功能全都有.全都有.全都有.
 注意:
 1. 本组件内部依赖layui的parseData与done方法.这两个方法只有在数据来自url时候会被调用.在直接传入data时候不会调用.因此会出现不可预知的错误.可以将数据放入另一个json文件.然后用url方式引入(url:'.data/json')
-
+2. 仓库有个ie分支.没有使用es6的语法.兼容ie浏览器.
 
 #### 组件引入方法请阅读 官方文档
 https://www.layui.com/doc/base/modules.html#extend
