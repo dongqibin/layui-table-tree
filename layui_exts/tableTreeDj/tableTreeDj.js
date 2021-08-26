@@ -43,6 +43,9 @@ layui.define(['table', 'jquery'], function(exports) {
 
         // table参数,作为中转变量,以期二次渲染的时候不用再次传入
         this.objTable = {};
+
+        // 原始data
+        this.dataOri = [];
     }
 
     // 渲染
@@ -215,6 +218,10 @@ layui.define(['table', 'jquery'], function(exports) {
 
     // ================== 获取器 ====================
     // 获取主键 key
+    Tree.prototype.getDataOri = function() {
+        return this.dataOri;
+    }
+
     Tree.prototype.getKeyId = function () {
         return this.config.keyId;
     }
@@ -423,6 +430,10 @@ layui.define(['table', 'jquery'], function(exports) {
     // 数据整理(总) - 获取数据之后,渲染数据之前.
     Tree.prototype._parse = function(data) {
         if(!data) data = [];
+
+        // 设置原始data
+        this._setDataOri(data)
+
         // 整理渲染时候的数据.this.run
         this._parseInit(data);
 
@@ -659,6 +670,10 @@ console.log(this.run);
 
     Tree.prototype._setDefaultShow = function(defaultShow) {
         this.config.defaultShow = defaultShow
+    }
+
+    Tree.prototype._setDataOri = function(dataOri) {
+        this.dataOri = JSON.parse(JSON.stringify(dataOri));
     }
 
     var obj = new Tree();

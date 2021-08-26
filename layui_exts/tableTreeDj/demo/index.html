@@ -13,6 +13,7 @@
 <button id="show">展开</button>
 <button id="hide">折叠</button>
 <button id="reload">重载</button>
+<button id="getData">获取data</button>
 
 <script type="text/javascript">
     layui.config({
@@ -96,6 +97,11 @@
              */
             objTable.where = {key:"val"}
             tableTree.reload(objTable, 'list');
+        });
+
+        $('#getData').click(function() {
+            var data = tableTree.getDataOri();
+            console.log(data);
         });
 
     });
