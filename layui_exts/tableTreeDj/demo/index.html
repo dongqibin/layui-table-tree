@@ -13,12 +13,14 @@
 <button id="show">展开</button>
 <button id="hide">折叠</button>
 <button id="reload">重载</button>
+<button id="showSn">展示run数据</button>
+<button id="getData">获取data数据</button>
 
 <script type="text/javascript">
     layui.config({
         base: '../../../layui_exts/tableTreeDj/'
     });
-    layui.use('tableTreeDj', function() {
+    layui.use(['tableTreeDj'], function() {
 
         let tableTree = layui.tableTreeDj;
         let $ = layui.$;
@@ -35,17 +37,18 @@
 
         // 字段配置
         const cols = [[
-            //{field:'name', title:'名称'}
-            {field:'id', title:'ID'}
+            {field:'sn', title:'序号'}
+            ,{field:'name', title:'名称',sort:true}
+            ,{field:'id', title:'ID'}
             ,{field:'pid', title:'上级ID'}
         ]];
 
         // 表格配置
         const objTable = {
             elem: '#test'
-            ,url: './data.php'
+            //,url: './data.php'
             //,url: './getData0.json'
-            //,url: './getData.json'
+            ,url: './getData.json'
             ,page:page
             ,limit: 2
             ,cols: cols
@@ -67,7 +70,7 @@
         const objTree = {
             showCache: true // 开启展开缓存
             , sort: 'asc'
-            , title: 'pid'
+            , title: 'name'
             , defaultShow: true
             , showByPidCallback: (idArr) => {
                 //console.log('idArr', idArr);
@@ -86,6 +89,34 @@
         $('#hide').click(() => {
             tableTree.hideAll(objTable);
         });
+
+        $('#showSn').click(() => {
+            const run = tableTree.getRun();
+            const dataIndex = run.dataIndex;
+            for(let id in dataIndex) {
+                let has = true;
+                let sn = id;
+                let idNow = id;
+
+                while(has) {
+                    if(!!run.childParent[idNow]) {
+                        let pid = run.childParent[idNow];
+                        sn = pid + " - " + sn;
+                        idNow = pid
+                    } else {
+                        break;
+                    }
+                }
+                $("[lay-id='"+ objTable.id +"'] table tr[data-index='"+ dataIndex[id] +"'] td[data-field="+ "sn" +"]").children("div").html(sn);
+            }
+        });
+
+        $('#getData').click(() => {
+            const data = tableTree.getDataOri();
+            console.log(data);
+        });
+
+
         $('#reload').click(() => {
             /*
             if(objTable.url === './getData0.json') {
